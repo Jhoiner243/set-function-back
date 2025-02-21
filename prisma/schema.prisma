@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String @unique @default(uuid())
+  username   String @unique
+  phone      Int?
+  name       String
+  email      String @unique
+  password   String
+  lastname   String
+  isPremium  Boolean? @map("is_premium")
+  roleId     String
+  role       Rol    @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Rol {
+  id         String   @id @default(uuid())
+  name       RoleName @unique
+  blockade   Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  users User[]
+
+  @@index([name])
+  @@index([blockade])
+}
+enum RoleName {
+  user
+  admin
+}
+
+model Category {
+  id        String  @id @default(uuid())
+  name      String  @unique
+  product   Product? @relation(fields: [productId], references: [id])
+  productId String? 
+}
+
+model Product {
+  id         String     @id @default(uuid())
+  name       String     @unique
+  price      Int
+  categories Category[]
+  createdAt  DateTime   @default(now()) @map("created_at") // 
+}
