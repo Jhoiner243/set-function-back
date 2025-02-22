@@ -3,12 +3,12 @@ import jwt from 'jsonwebtoken';
 import { server } from './index';
 import { PORT, SECRET_KEY_JWT } from './src/config';
 import { PromptRepository } from './src/module/gemini-ai/infrastructure/prompt-repository';
+import { ImpProductDto } from './src/module/product/infrastructure/repositories/product.repository';
 import { UserEntity } from './src/module/user/domain/entities/user.entity';
 import { UserRepository } from './src/module/user/user-repository';
 import { db } from './src/prisma/db';
 
 // Creamos un middleware
-
 
 server.post('/login', async (req: Request, res: Response) => {
   const { username, password } = req.body;
@@ -85,14 +85,32 @@ server.get('users', () => {})
 
 server.get('/products', (req: Request, res: Response) => {
   const token = req.cookies.access_token
+
   if(!token) res.status(401).send('Access not authorized')
 
   try{
     const data = jwt.verify(token, SECRET_KEY_JWT)
     res.render(`proctected ${data}`)
 
+    const productImplements =  new ImpProductDto()
+
+     res.json(productImplements.getProduct())
   }catch(error){
     res.status(500).send("Error interno")
+  }
+})
+
+server.post('/products', (req, res) => {
+  try {
+    const {name, price} = req.body
+
+    const newProduct = new ImpProductDto()
+    
+    newProduct.reqPostProduct({name, price})
+
+    res.json("Producto añadido correctamente")
+  } catch(err){
+    return console.table(err)
   }
 })
 
